@@ -51,3 +51,6 @@ ehthumbs.db
 # --- ZIP de entrega: se arma al final, no se versiona ---
 Pareja_*_Polipasto.zip
 *.zip
+
+# --- Capturas que genera verificacion/prueba_navegador.py ---
+verificacion/capturas/
