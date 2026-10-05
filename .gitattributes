@@ -1,0 +1,22 @@
+# Normaliza finales de línea para que el repo funcione igual en Windows y Linux
+* text=auto
+
+# Código y datos de texto
+*.m       text diff=matlab
+*.js      text
+*.html    text
+*.css     text
+*.md      text
+*.py      text
+*.csv     text
+*.ipynb   text
+
+# Binarios: nunca convertir finales de línea
+*.slx     binary
+*.mdl     -text
+*.mat     binary
+*.docx    binary
+*.pdf     binary
+*.png     binary
+*.jpg     binary
+*.zip     binary

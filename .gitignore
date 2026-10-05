@@ -1,0 +1,53 @@
+# ------------------------------------------------------------
+# .gitignore · Polipasto (Modelado y Simulación, UPC 2026)
+# Ignora solo lo que MATLAB, Python y los sistemas operativos
+# generan solos. Los resultados del proyecto (polipasto.slx,
+# datos_mecanismo.csv, escenarios/, capturas) SÍ se suben.
+# ------------------------------------------------------------
+
+# --- MATLAB / Simulink: archivos temporales y de compilación ---
+*.asv
+*.autosave
+*.slxc
+*.slx.r20*
+*.mdl.r20*
+*.bak
+slprj/
+codegen/
+sccprj/
+*_ert_rtw/
+*_grt_rtw/
+*_rsim_rtw/
+*.mexw64
+*.mexa64
+*.mexmaci64
+*.mexmaca64
+
+# Copia de respaldo que crea construir_polipasto(true)
+polipasto_respaldo.slx
+
+# --- Python / Jupyter ---
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# --- Word / Office: archivos de bloqueo al tener un documento abierto ---
+~$*
+
+# --- Sistemas operativos ---
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# --- Editores ---
+.vscode/
+.idea/
+*.swp
+
+# --- ZIP de entrega: se arma al final, no se versiona ---
+Pareja_*_Polipasto.zip
+*.zip
