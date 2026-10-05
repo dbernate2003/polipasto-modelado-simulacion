@@ -345,7 +345,7 @@
       ctx.strokeStyle = c.excedido;
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(xLibre + 2, yMano, 9, 0, Math.PI * 2); ctx.stroke();
-      rotulo(ctx, c, 'F_op > ' + fmt(p.Fmax, 0) + ' N', Math.min(W - 6, xOp + 30), G.piso - alto - 8, c.excedido, 'right');
+      rotulo(ctx, c, 'F_op > ' + fmt(p.Fmax, 0) + ' N', Math.min(xLibre + 8, W - 92), G.yF + R + 34, c.excedido, 'left');
     }
 
     // --- Fuerzas sobre la carga (DCL junto al cuerpo, a escala: M*g mide 48 px) ---
