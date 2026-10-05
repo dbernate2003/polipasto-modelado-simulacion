@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gemelo digital del polipasto</title>
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+<header class="barra">
+  <div class="marca">
+    <svg class="marca-icono" viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="16" cy="8" r="1.6" fill="currentColor"/>
+      <path d="M10.5 8v10M21.5 8v10" stroke="currentColor" stroke-width="1.6"/>
+      <rect x="9" y="17" width="14" height="5" rx="1.5" class="marca-bloque"/>
+      <path d="M16 22v3.5a3 3 0 1 1-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>Gemelo digital del polipasto</h1>
+      <p class="marca-sub">Polipasto manual de aparejo con <span id="subN">4</span> ramales</p>
+    </div>
+  </div>
+
+  <div class="segmentado" role="radiogroup" aria-label="Origen de los datos">
+    <button type="button" role="radio" data-modo="csv" aria-checked="true">Simulink (CSV)</button>
+    <button type="button" role="radio" data-modo="vivo" aria-checked="false">En vivo</button>
+  </div>
+  <p class="fuente" id="fuente" title="Origen de los datos que se muestran">Datos: referencia analítica incluida</p>
+
+  <div class="acciones">
+    <button type="button" class="boton" id="btnCargar">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 16h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Cargar CSV
+    </button>
+    <input type="file" id="archivo" accept=".csv,text/csv" multiple hidden>
+    <div class="menu">
+      <button type="button" class="boton" id="btnExportar" aria-haspopup="true" aria-expanded="false">Exportar</button>
+      <div class="menu-lista" id="menuExportar" role="menu" hidden>
+        <button type="button" role="menuitem" data-exportar="csv">CSV de esta corrida</button>
+        <button type="button" role="menuitem" data-exportar="png">Imagen PNG del mecanismo y las gráficas</button>
+      </div>
+    </div>
+    <button type="button" class="boton icono" id="btnTema" aria-label="Cambiar a tema oscuro" title="Tema claro u oscuro">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 3.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg>
+    </button>
+    <button type="button" class="boton icono" id="btnPantalla" aria-label="Pantalla completa" title="Pantalla completa (F)">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7.5V3h4.5M12.5 3H17v4.5M17 12.5V17h-4.5M7.5 17H3v-4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<section class="escenarios" aria-labelledby="escTituloSeccion">
+  <h2 class="oculto" id="escTituloSeccion">Escenarios de demostración</h2>
+  <ol class="esc-lista" id="escLista"></ol>
+  <div class="esc-nav">
+    <button type="button" class="boton" id="escPrev" aria-label="Escenario anterior">Anterior</button>
+    <button type="button" class="boton primario" id="escNext" aria-label="Escenario siguiente">Siguiente</button>
+  </div>
+  <div class="esc-nota" id="escNota" aria-live="polite">
+    <p class="esc-titulo" id="escTitulo">Elige un escenario o mueve los parámetros</p>
+    <p class="esc-observar" id="escObservar">Cada escenario cambia los parámetros, reinicia la animación y explica qué mirar en el mecanismo y en las curvas.</p>
+    <p class="esc-pregunta" id="escPregunta"></p>
+  </div>
+</section>
+
+<main class="banco">
+  <section class="panel mecanismo" aria-labelledby="hMecanismo">
+    <div class="panel-cab">
+      <h2 id="hMecanismo">Mecanismo</h2>
+      <div class="interruptores">
+        <label class="interruptor"><input type="checkbox" id="chkDCL" checked><span>Fuerzas</span></label>
+        <label class="interruptor" title="Marca la altura de la carga cada 0.5 s: la separación entre marcas muestra la velocidad"><input type="checkbox" id="chkRastro" checked><span>Marcas</span></label>
+      </div>
+    </div>
+    <div class="lienzo-mecanismo"><canvas id="cvMecanismo" role="img" aria-label="Animación del polipasto"></canvas></div>
+    <div class="mec-pie">
+      <p><span>Cabo recogido <b id="mpCabo">0.00 m</b></span><span>Subida <b id="mpSubida">0.00 m</b></span><span>Cabo/subida <b id="mpRazon">–</b></span></p>
+      <p class="mec-fuerzas" id="mecFuerzas"><span class="f-t">n·T <b id="mpNT">0 N</b></span><span class="f-g">M·g <b id="mpMG">0 N</b></span><span class="f-a">M·a <b id="mpMA">0 N</b> <small>(flecha ×20)</small></span></p>
+    </div>
+  </section>
+
+  <section class="panel graficas" aria-labelledby="hGraficas">
+    <div class="panel-cab">
+      <h2 id="hGraficas">Gráficas</h2>
+      <div class="segmentado chico" role="radiogroup" aria-label="Vista de gráficas">
+        <button type="button" role="radio" data-vista="tres" aria-checked="true">3 gráficas</button>
+        <button type="button" role="radio" data-vista="osc" aria-checked="false">Osciloscopio (6)</button>
+      </div>
+    </div>
+    <div class="fila-ref">
+      <p class="leyenda-ref" id="leyendaRef"></p>
+      <div class="ref-controles">
+        <label class="interruptor"><input type="checkbox" id="chkRef" checked><span>Referencia</span></label>
+        <button type="button" class="enlace" id="btnFijarRef" title="Usa la corrida actual como curva gris para comparar">Fijar esta corrida</button>
+        <button type="button" class="enlace" id="btnRefSimulink" hidden>Volver a Simulink</button>
+      </div>
+    </div>
+    <div class="cont-graficas" id="contGraficas" data-vista="tres"></div>
+  </section>
+
+  <aside class="lateral">
+    <section class="panel parametros" aria-labelledby="hParametros">
+      <div class="panel-cab">
+        <h2 id="hParametros">Parámetros</h2>
+        <button type="button" class="enlace" id="btnNominal">Restablecer nominal</button>
+      </div>
+      <div class="param" title="Masa de la carga (10 a 100 kg)">
+        <label for="rgM">Masa <i>m</i></label>
+        <input type="range" id="rgM" min="10" max="100" step="1">
+        <input type="number" id="nmM" min="10" max="100" step="1" aria-label="Masa en kilogramos"><span class="unidad">kg</span>
+      </div>
+      <div class="param" title="Ramales que sostienen el bloque móvil (2, 4 o 6)">
+        <span class="param-etiqueta" id="lbN">Ramales <i>n</i></span>
+        <div class="segmentado ramales" role="radiogroup" aria-labelledby="lbN">
+          <button type="button" role="radio" data-n="2" aria-checked="false">2</button>
+          <button type="button" role="radio" data-n="4" aria-checked="true">4</button>
+          <button type="button" role="radio" data-n="6" aria-checked="false">6</button>
+        </div>
+      </div>
+      <div class="param" title="Velocidad máxima con la que el operario recoge el cabo (0.1 a 1 m/s)">
+        <label for="rgVc">Cabo <i>V<sub>c</sub></i></label>
+        <input type="range" id="rgVc" min="0.1" max="1" step="0.01">
+        <input type="number" id="nmVc" min="0.1" max="1" step="0.01" aria-label="Velocidad del cabo en metros por segundo"><span class="unidad">m/s</span>
+      </div>
+      <div class="param" title="Duración del arranque y del frenado (0.2 a 2 s)">
+        <label for="rgTa">Arranque <i>t<sub>a</sub></i></label>
+        <input type="range" id="rgTa" min="0.2" max="2" step="0.05">
+        <input type="number" id="nmTa" min="0.2" max="2" step="0.05" aria-label="Tiempo de arranque en segundos"><span class="unidad">s</span>
+      </div>
+      <p class="aviso-param" id="avisoParam" aria-live="polite"></p>
+    </section>
+
+    <section class="panel lecturas" aria-labelledby="hLecturas">
+      <div class="panel-cab">
+        <h2 id="hLecturas">Lecturas</h2>
+        <span class="fase-chip" id="faseChip">Reposo inicial</span>
+      </div>
+      <dl class="lecturas-grid" id="lecturas"></dl>
+    </section>
+
+    <section class="panel limites" aria-labelledby="hLimites">
+      <div class="panel-cab"><h2 id="hLimites">Límites físicos</h2></div>
+      <div class="medidor" id="medFuerza">
+        <div class="medidor-cab"><span>Fuerza del operario</span><strong class="medidor-estado" data-estado="ok">Normal</strong></div>
+        <div class="medidor-barra"><div class="medidor-relleno"></div><div class="medidor-marca" data-marca="cerca"></div><div class="medidor-marca limite" data-marca="limite"></div></div>
+        <p class="medidor-pie"></p>
+      </div>
+      <div class="medidor" id="medAltura">
+        <div class="medidor-cab"><span>Altura de la carga</span><strong class="medidor-estado" data-estado="ok">Normal</strong></div>
+        <div class="medidor-barra"><div class="medidor-relleno"></div><div class="medidor-marca" data-marca="cerca"></div><div class="medidor-marca limite" data-marca="limite"></div></div>
+        <p class="medidor-pie"></p>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<section class="reproduccion" aria-label="Reproducción">
+  <button type="button" class="boton icono redondo" id="btnPlay" aria-label="Reproducir (barra espaciadora)" title="Reproducir o pausar (espacio)">
+    <svg viewBox="0 0 20 20" aria-hidden="true" class="ic-play"><path d="M6 4l10 6-10 6z" fill="currentColor"/></svg>
+    <svg viewBox="0 0 20 20" aria-hidden="true" class="ic-pausa"><path d="M5.5 4h3v12h-3zM11.5 4h3v12h-3z" fill="currentColor"/></svg>
+  </button>
+  <button type="button" class="boton icono" id="btnAtras" aria-label="Retroceder 0.1 s" title="Retroceder 0.1 s (flecha izquierda)">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 5 7.5 10l5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <button type="button" class="boton icono" id="btnAdelante" aria-label="Avanzar 0.1 s" title="Avanzar 0.1 s (flecha derecha)">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <output class="tiempo" id="tiempo" for="lineaTiempo">t = 0.00 s</output>
+  <div class="linea-tiempo">
+    <div class="fases" id="bandasFase" aria-hidden="true"></div>
+    <input type="range" id="lineaTiempo" min="0" max="2000" step="1" value="0" aria-label="Línea de tiempo">
+  </div>
+  <div class="segmentado chico" role="radiogroup" aria-label="Velocidad de reproducción" id="velocidades">
+    <button type="button" role="radio" data-vel="0.25" aria-checked="false">0.25×</button>
+    <button type="button" role="radio" data-vel="0.5" aria-checked="false">0.5×</button>
+    <button type="button" role="radio" data-vel="1" aria-checked="true">1×</button>
+    <button type="button" role="radio" data-vel="2" aria-checked="false">2×</button>
+  </div>
+  <label class="interruptor"><input type="checkbox" id="chkBucle"><span>Repetir</span></label>
+</section>
+
+<section class="inferior">
+  <section class="panel dcl" aria-labelledby="hDCL">
+    <div class="panel-cab">
+      <h2 id="hDCL">Diagrama de cuerpo libre</h2>
+    </div>
+    <div class="pestanas" role="tablist" aria-label="Cuerpo aislado">
+      <button type="button" role="tab" data-cuerpo="carga" aria-selected="true">Carga y bloque móvil</button>
+      <button type="button" role="tab" data-cuerpo="fijo" aria-selected="false">Bloque fijo</button>
+      <button type="button" role="tab" data-cuerpo="polea" aria-selected="false">Polea ideal</button>
+      <button type="button" role="tab" data-cuerpo="operario" aria-selected="false">Cabo y operario</button>
+    </div>
+    <div class="lienzo-dcl"><canvas id="cvDCL" role="img" aria-label="Diagrama de cuerpo libre"></canvas></div>
+    <p class="dcl-ecuacion" id="dclEcuacion"></p>
+  </section>
+
+  <section class="panel energia" aria-labelledby="hEnergia">
+    <div class="panel-cab"><h2 id="hEnergia">Energía</h2></div>
+    <div class="barras" id="barrasEnergia"></div>
+    <p class="balance" id="balance"></p>
+  </section>
+
+  <section class="panel ecuaciones" aria-labelledby="hEcuaciones">
+    <div class="panel-cab"><h2 id="hEcuaciones">Ecuaciones en vivo</h2></div>
+    <ol class="ecuaciones-lista" id="ecuaciones"></ol>
+  </section>
+
+  <section class="panel validacion" aria-labelledby="hValidacion">
+    <div class="panel-cab"><h2 id="hValidacion">Validación contra Simulink</h2></div>
+    <div id="validacion"></div>
+  </section>
+</section>
+
+<div class="soltar" id="soltar" hidden><p>Suelta aquí <b>datos_mecanismo.csv</b> y <b>parametros_mecanismo.csv</b></p></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="modelo.js"></script>
+<script src="csv.js"></script>
+<script src="graficas.js"></script>
+<script src="mecanismo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
